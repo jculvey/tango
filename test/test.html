@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Tango Tests</title>
+  <link rel="stylesheet" href="qunit.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture">
+
+    <h3>Text Field Tests</h3>
+    <form action="foo" role="form">
+      <input type="text" data-bind="firstName"/>
+      <input type="text" data-bind="lastName"/>
+      <input type="text" data-bind="age"/>
+      <input type="text" data-bind="weight"/>
+      <input type="text" data-bind="weight2"/>
+      <input type="text" data-bind="headcover"/>
+      <input type="text" data-bind="party"/>
+    </form>
+
+  </div>
+
+
+  <!--Qunit-->
+  <script src="qunit.js"></script>
+
+  <!--Vendor-->
+  <script src="../bower_components/underscore/underscore.js"></script>
+  <script src="../bower_components/backbone/backbone.js"></script>
+  <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+  <!--Tango-->
+  <script src="../tango.js"></script>
+
+  <!--Test File-->
+  <script src="tests.js"></script>
+
+</body>
+</html>
