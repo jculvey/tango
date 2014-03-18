@@ -72,24 +72,7 @@ Tango.TextInput('lastName', {
 
 ```
 
-### Demo
-
-<div class="row">
-  <div class="large-4 columns">
-    <label>
-      First Name
-      <input type="text" data-bind="firstName" value="George" />
-    </label>
-
-    <label>
-      Last Name
-      <input type="text" data-bind="lastName" value="Washington" />
-    </label>
-  </div>
-</div>
-
 ## Text Area
-Tango.TextArea()
 
 ### Usage Example
 
@@ -111,23 +94,7 @@ Tango.TextArea('description', {
 
 ```
 
-### Demo
-
-<div class="row">
-  <div class="large-6 columns">
-    <label>
-       Description
-      <textarea rows="2" cols="5" data-bind="description">
-Something really awesome...
-      </textarea>
-</label>
-
-  </div>
-</div>
-
 ## Checkbox
-
-Tango.Checkbox
 
 ### Usage Example
 ```js
@@ -141,13 +108,6 @@ Tango.TextArea('enableCheats', {
 }, model);
 
 ```
-
-### Demo
-
-<label>
-   Are you cheating?
-  <input type="checkbox" data-bind="enableCheats"/>
-</label>
 
 ## Radio Buttons
 
@@ -174,26 +134,6 @@ fav.value(); // => blue
 
 ```
 
-### Demo
-
-<label>Choose Your Favorite</label>
-
-<label >
-  <input type="radio" name="favoriteColor" value="Red" data-bind="favoriteColor">
-  Red
-</label>
-
-<label >
-  <input type="radio" name="favoriteColor" value="Blue" data-bind="favoriteColor">
-  Blue
-</label>
-
-<label >
-  <input type="radio" name="favoriteColor" value="Orange" data-bind="favoriteColor">
-  Orange
-</label>
-
-
 ## Select 
 
 ### Usage Example
@@ -218,21 +158,7 @@ fruit.setOptions('bc', [
 );
 ```
 
-### Demo
-
-<div class="row">
-  <div class="large-4 columns">
-    <select data-bind="fruits" required="true">
-      <option value="apple">Apple</option> 
-      <option value="banana" selected>Banana</option>
-      <option value="orange">Orange</option>
-    </select>
-  </div>
-</div>
-
 ## Autocomplete
-
-Tango.Autocomplete
 
 ### Usage Example
 
@@ -355,33 +281,11 @@ form.toJson() // => { firstName: 'George', lastName: 'Washington' }
 
 ## Tables
 
-Tango.Table(config, model);
-
-### Usage Example
-
-```js
-
-```
+Under development...
 
 ## Lists
 
-Tango.List(config, model);
-
-### Usage Example
-
-```js
-
-```
-
-## Events
-
-### Usage Example
-
-```js
-widget.on('change:value', function(e){
-  alert('Value of ' + e.target.dataBind + 'changed');
-});
-```
+Under development...
 
 ## Example Code
 
@@ -450,6 +354,4 @@ fruitSelector.disable()
 
 }
 ```
-
-
 
