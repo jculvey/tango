@@ -65,22 +65,10 @@
     return containerEl;
   }
 
-  function attachRequiredValidator(el, containerEl) {
-    el.on('change', function handler(event){
-      var val = $(this).val();
-      var errorClass = styleConf.errorClass;
-      if(!val) {
-        containerEl.addClass(errorClass);
-      }
-      else {
-        containerEl.removeClass(errorClass);
-      }
-    });
-  }
-
-  function toggleErrorClass(el, containerEl, isValid){
+  function toggleErrorClass(el, containerEl, errors){
+    var valid = errors.length === 0;
     var errorClass = styleConf.errorClass;
-    if(isValid) {
+    if(valid) {
       containerEl.removeClass(errorClass);
     }
     else {
@@ -88,7 +76,7 @@
     }
   }
 
-  function validate(val, conf) {
+  function validate(val, conf, self) {
     var errors = [];
 
     // Required
@@ -178,13 +166,13 @@
       }
     }
 
+    toggleErrorClass(self.el, self.containerEl, errors);
     return errors;
   }
 
   var TextInput = Tango.TextInput = function(dataBind, config, model) {
     var self = this;
     self.dataBind = dataBind;
-    self.valid = true;
     self.errors = [];
     config || (config = {});
 
@@ -233,9 +221,7 @@
 
     // validate initial state.
     if (config.validate) {
-      self.errors = validate(el.val(), config.validate);
-      self.valid = self.errors.length === 0;
-      toggleErrorClass(self.el, self.containerEl, !self.errors.length);
+      self.errors = validate(el.val(), config.validate, self);
     }
 
     /// Data binding
@@ -244,11 +230,15 @@
     var event = 'change:' + dataBind;
     model.on(event, function() {
       el.val(self.model.get(self.dataBind));
+
+      // Re-validate
+      if ( config.validate ) {
+        self.errors = validate(model.get(dataBind), config.validate, self);
+      }
     }, self);
 
     // Handle global model change
-    model.on("change", function() {
-      console.log('model change');
+    model.on("change", function(foo, bar) {
 
       // enabled
       if (config.enableFn) {
@@ -276,36 +266,32 @@
 
 
     // Wire widget to model 
-    el.on('change', function inputChangeHandler(event){
-      console.log('change');
+    //el.on('change', function inputChangeHandler(event){
+    function inputChangeHandler(event){
       var val = $(this).val();
 
       if ( config.validate ) {
-        self.errors = validate(val, config.validate);
-        self.valid = self.errors.length === 0;
-        toggleErrorClass(self.el, self.containerEl, !self.errors.length);
+        self.errors = validate(val, config.validate, self);
       }
 
       self.value($(this).val());
-    });
-
-    el.on('input', function() {
-      console.log('input');
-    });
-
-    el[0].onchange = function() {
-      console.log('node change');
     };
+
+    el.on('change', inputChangeHandler);
+    el.on('keyup', inputChangeHandler);
 
     // if a match validator exists, re-validate when the target changes.
     if ( config.validate && config.validate.matches ) {
       var matchingEl = $('[data-bind=' + config.validate.matches.target + ']');
 
+      matchingEl.keyup(function() {
+        var val = self.el.val();
+        self.errors = validate(val, config.validate, self);
+      });
+
       matchingEl.on('change', function() {
         var val = self.el.val();
-        self.errors = validate(val, config.validate);
-        self.valid = self.errors.length === 0;
-        toggleErrorClass(self.el, self.containerEl, !self.errors.length);
+        self.errors = validate(val, config.validate, self);
       });
     }
 
@@ -344,6 +330,11 @@
     self.modified = function() {
       return self.value() !== self.lastValue;
     }
+
+    self.isValid = function(){
+      return self.errors.length == 0;
+    };
+
 
   };
 
