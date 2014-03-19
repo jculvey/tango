@@ -76,105 +76,11 @@
     }
   }
 
-  function validate(val, conf, self) {
-    var errors = [];
-
-    // Required
-    if (conf.required) {
-      if (!val) {
-        var errMsg = styleConf.requiredErr;
-        errors.push(errMsg);
-      }
-    }
-
-    // Max Length
-    if (conf.maxLength) {
-      if (val.length > conf.maxLength){
-        var templateData = {maxLength: conf.maxLength}
-        var errMsg = _.template(styleConf.maxLenErr, templateData);
-        errors.push(errMsg);
-      }
-    }
-
-    // Min Length
-    if (conf.minLength) {
-      if (val.length < conf.minLength){
-        var templateData = {maxLength: conf.minLength}
-        var errMsg = _.template(styleConf.minLenErr, templateData);
-        errors.push(errMsg);
-      }
-    }
-
-    // Numbers
-    var numberSpec = conf.number;
-    if (numberSpec) {
-      var isNumber = $.isNumeric(val);
-
-      if (val && !isNumber){
-        errors.push(styleConf.numberErr);
-      }
-
-      // If a number validation spec was specified, check for min/max, etc.
-      // number: { min: 20, max: 40 }
-      if(val && _.isObject(numberSpec) && isNumber){
-        var numberValue = parseFloat(val) || parseInt(val);
-
-        if(numberSpec.minValue && numberValue < numberSpec.minValue) {
-          var templateData = {minValue: numberSpec.minValue}
-          var errMsg = _.template(styleConf.minValErr, templateData);
-          errors.push(errMsg);
-        }
-
-        if(numberSpec.maxValue && numberValue > numberSpec.maxValue) {
-          var templateData = {maxValue: numberSpec.maxValue}
-          var errMsg = _.template(styleConf.maxValErr, templateData);
-          errors.push(errMsg);
-        }
-      }
-    }
-
-    // Format
-    if (conf.format) {
-      var regex = conf.format.regex;
-
-      if (val && regex && !regex.exec(val)){
-        if (conf.format.errorMsg) {
-          errors.push(conf.format.errorMsg);
-        }
-        else {
-          errors.push("Invalid format.");
-        }
-      }
-    }
-
-    // Matches
-    if (conf.matches) {
-      var matchingEl = $('[data-bind=' + conf.matches.target + ']');
-
-      if (!!matchingEl.length) {
-        if ( val && !(val === matchingEl.val()) ){
-          if (conf.matches.errorMsg) {
-            errors.push(conf.matches.errorMsg);
-          }
-          else {
-            errors.push("Confirmation must match.");
-          }
-        }
-      }
-      else {
-        log('Invalid target for match validator: ' + conf.matches.target);
-      }
-    }
-
-    toggleErrorClass(self.el, self.containerEl, errors);
-    return errors;
-  }
-
   var TextInput = Tango.TextInput = function(dataBind, config, model) {
     var self = this;
-    self.dataBind = dataBind;
     self.errors = [];
-    config || (config = {});
+    self._dataBind = dataBind;
+    self._config = (config || {});
 
     var el = $('[data-bind=' + dataBind + ']');
     if (el.length == []) {
@@ -215,26 +121,22 @@
     el.addClass(styleConf.textInputClass);
 
     // Create a label if needed
-    if (config.label) {
-      self.labelEl = createLabel(el, config.label);
+    if (self._config.label) {
+      self.labelEl = createLabel(el, self._config.label);
     }
 
     // validate initial state.
-    if (config.validate) {
-      self.errors = validate(el.val(), config.validate, self);
-    }
+    self._validate();
 
     /// Data binding
     // Wire model to widget 
     // Handle model changes to just this attribute
     var event = 'change:' + dataBind;
     model.on(event, function() {
-      el.val(self.model.get(self.dataBind));
+      el.val(self.model.get(self._dataBind));
 
       // Re-validate
-      if ( config.validate ) {
-        self.errors = validate(model.get(dataBind), config.validate, self);
-      }
+      self._validate();
     }, self);
 
     // Handle global model change
@@ -264,16 +166,10 @@
 
     }, self);
 
-
     // Wire widget to model 
-    //el.on('change', function inputChangeHandler(event){
     function inputChangeHandler(event){
+      self._validate();
       var val = $(this).val();
-
-      if ( config.validate ) {
-        self.errors = validate(val, config.validate, self);
-      }
-
       self.value($(this).val());
     };
 
@@ -281,62 +177,157 @@
     el.on('keyup', inputChangeHandler);
 
     // if a match validator exists, re-validate when the target changes.
-    if ( config.validate && config.validate.matches ) {
-      var matchingEl = $('[data-bind=' + config.validate.matches.target + ']');
-
-      matchingEl.keyup(function() {
-        var val = self.el.val();
-        self.errors = validate(val, config.validate, self);
-      });
-
-      matchingEl.on('change', function() {
-        var val = self.el.val();
-        self.errors = validate(val, config.validate, self);
-      });
+    if ( self._config.validate && self._config.validate.matches ) {
+      var matchingEl = $('[data-bind=' + self._config.validate.matches.target + ']');
+      matchingEl.keyup( $.proxy(self._validate, self) );
+      matchingEl.on('change', $.proxy(self._validate, self) );
     }
-
-    /// Add functions
-    self.value = function(newValue){
-      if ( newValue !== undefined ) {
-        self.lastValue = self.model.get(self.dataBind) || "";
-        self.model.set(self.dataBind, newValue);
-      }
-      else {
-        return self.model.get(self.dataBind);
-      }
-    };
-
-    self.show = function(){
-      self.containerEl.show();
-    };
-
-    self.hide = function(){
-      self.containerEl.hide();
-    };
-
-    self.enable = function(){
-      self.el.prop('disabled', false);
-    };
-
-    self.disable = function(){
-      self.el.prop('disabled', true);
-    };
-
-    self.reset = function(){
-      // Don't use self.value so that the lastValue is reset as well.
-      self.model.set(self.dataBind, self.lastValue);
-    };
-
-    self.modified = function() {
-      return self.value() !== self.lastValue;
-    }
-
-    self.isValid = function(){
-      return self.errors.length == 0;
-    };
-
 
   };
+
+  _.extend(TextInput.prototype, {
+
+    value: function(newValue){
+      if ( newValue !== undefined ) {
+        this.lastValue = this.model.get(this._dataBind) || "";
+        this.model.set(this._dataBind, newValue);
+      }
+      else {
+        return this.model.get(this._dataBind);
+      }
+    },
+
+    show: function(){
+      this.containerEl.show();
+    },
+
+    hide: function(){
+      this.containerEl.hide();
+    },
+
+    enable: function(){
+      this.el.prop('disabled', false);
+    },
+
+    disable: function(){
+      this.el.prop('disabled', true);
+    },
+
+    reset: function(){
+      // Don't use self.value so that the lastValue is reset as well.
+      this.model.set(this.dataBind, this.lastValue);
+    },
+
+    modified: function() {
+      return this.value() !== this.lastValue;
+    },
+
+    isValid: function(){
+      return this.errors.length == 0;
+    },
+
+    _validate: function(){
+      if (!this._config.validate) {
+        return;
+      }
+
+      var errors = [];
+      var val = this.el.val();
+      var conf = this._config.validate;
+
+      // Required
+      if (conf.required) {
+        if (!val) {
+          var errMsg = styleConf.requiredErr;
+          errors.push(errMsg);
+        }
+      }
+
+      // Max Length
+      if (conf.maxLength) {
+        if (val.length > conf.maxLength){
+          var templateData = {maxLength: conf.maxLength}
+          var errMsg = _.template(styleConf.maxLenErr, templateData);
+          errors.push(errMsg);
+        }
+      }
+
+      // Min Length
+      if (conf.minLength) {
+        if (val.length < conf.minLength){
+          var templateData = {maxLength: conf.minLength}
+          var errMsg = _.template(styleConf.minLenErr, templateData);
+          errors.push(errMsg);
+        }
+      }
+
+      // Numbers
+      var numberSpec = conf.number;
+      if (numberSpec) {
+        var isNumber = $.isNumeric(val);
+
+        if (val && !isNumber){
+          errors.push(styleConf.numberErr);
+        }
+
+        // If a number validation spec was specified, check for min/max, etc.
+        // number: { min: 20, max: 40 }
+        if(val && _.isObject(numberSpec) && isNumber){
+          var numberValue = parseFloat(val) || parseInt(val);
+
+          if(numberSpec.minValue && numberValue < numberSpec.minValue) {
+            var templateData = {minValue: numberSpec.minValue}
+            var errMsg = _.template(styleConf.minValErr, templateData);
+            errors.push(errMsg);
+          }
+
+          if(numberSpec.maxValue && numberValue > numberSpec.maxValue) {
+            var templateData = {maxValue: numberSpec.maxValue}
+            var errMsg = _.template(styleConf.maxValErr, templateData);
+            errors.push(errMsg);
+          }
+        }
+      }
+
+      // Format
+      if (conf.format) {
+        var regex = conf.format.regex;
+
+        if (val && regex && !regex.exec(val)){
+          if (conf.format.errorMsg) {
+            errors.push(conf.format.errorMsg);
+          }
+          else {
+            errors.push("Invalid format.");
+          }
+        }
+      }
+
+      // Matches
+      if (conf.matches) {
+        var matchingEl = $('[data-bind=' + conf.matches.target + ']');
+
+        if (!!matchingEl.length) {
+          if ( val && !(val === matchingEl.val()) ){
+            if (conf.matches.errorMsg) {
+              errors.push(conf.matches.errorMsg);
+            }
+            else {
+              errors.push("Confirmation must match.");
+            }
+          }
+        }
+        else {
+          log('Invalid target for match validator: ' + conf.matches.target);
+        }
+      }
+
+      toggleErrorClass(this.el, this.containerEl, errors);
+      this.errors = errors;
+    }
+
+  });
+
 
   root.Tango = Tango;
 

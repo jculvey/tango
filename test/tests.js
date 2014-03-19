@@ -32,6 +32,7 @@ test( "basic minimal input creation", function() {
   ok( fname.modified() == false );
 
   ok( fname.containerEl[0].nodeName == 'DIV' );
+  debugger;
   ok( fname.labelEl.text() === 'First Name' );
 
   ok( fname.isValid() );
