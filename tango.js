@@ -139,31 +139,27 @@
       self._validate();
     }, self);
 
+
+    function modelChangeHandler(fn, trueCb, falseCb) {
+      if (fn) {
+        var cond = fn(this.model);
+        if (cond) {
+          trueCb.call(this);
+        }
+        else {
+          falseCb.call(this);
+        }
+      }
+    }
+
+    // Handle visible and enabled for initial state
+    modelChangeHandler.call(self, self._config.enableFn, self.enable, self.disable);
+    modelChangeHandler.call(self, self._config.visibleFn, self.show, self.hide);
+
     // Handle global model change
-    model.on("change", function(foo, bar) {
-
-      // enabled
-      if (config.enableFn) {
-        var cond = config.enableFn(self.model);
-        if (cond) {
-          self.enable();
-        }
-        else {
-          self.disable();
-        }
-      }
-
-      // visible
-      if (config.visibleFn) {
-        var cond = config.visibleFn(self.model);
-        if (cond) {
-          self.show();
-        }
-        else {
-          self.hide();
-        }
-      }
-
+    model.on("change", function() {
+      modelChangeHandler.call(self, config.enableFn, self.enable, self.disable);
+      modelChangeHandler.call(self, config.visibleFn, self.show, self.hide);
     }, self);
 
     // Wire widget to model 

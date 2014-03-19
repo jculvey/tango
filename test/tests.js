@@ -32,7 +32,6 @@ test( "basic minimal input creation", function() {
   ok( fname.modified() == false );
 
   ok( fname.containerEl[0].nodeName == 'DIV' );
-  debugger;
   ok( fname.labelEl.text() === 'First Name' );
 
   ok( fname.isValid() );
@@ -368,6 +367,25 @@ test( "format validator", function() {
 
 });
 
+
+test( "enableFn validator", function() {
+
+  var email = new Tango.TextInput('catOrHat', {
+    label: 'Enter "cat" or "hat"',
+    enableFn: function(model) {
+      return model.get("weight") > 215;
+    }
+  }, model);
+
+  ok( email.el.prop("disabled") );
+
+  model.set('weight', 120);
+  ok( email.el.prop("disabled") );
+
+  model.set('weight', 220);
+  ok( email.el.prop("disabled") == false );
+
+});
 
 
 
