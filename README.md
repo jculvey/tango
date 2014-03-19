@@ -1,6 +1,8 @@
 tango
 =====
 
+Still a work in progress.
+
 ## Overview
 
 Tango is a javascript widget library that provides automatic two way binding
@@ -22,24 +24,27 @@ Tango provides widgets for:
 It can easily integrate with off the shelf CSS packages like Bootstrap 
 and Foundation.
 
-## View Models 
+## Models 
 
 Tango uses Backbone models to bind data to wigets.
 
+
 ```js
-var viewModel = new Backbone.Model({
+var model = new Backbone.Model({
   firstName: 'George',
   lastName: 'Washington',
   dob: '2/22/1732'
 });
 
-viewModel.set('firstName', 'John');
-viewModel.set('lastName', 'Adams');
+model.set('firstName', 'John');
+model.set('lastName', 'Adams');
 
-viewModel.changed; // => { firstName: 'John', lastName: 'Adams' }
-viewModel.changedAttributes(); // => { firstName: 'John', lastName: 'Adams' }
+model.changed; // => { firstName: 'John', lastName: 'Adams' }
+model.changedAttributes(); // => { firstName: 'John', lastName: 'Adams' }
 
-viewModel.sync();
+// Do all the things you normally do with Backbone models.
+model.toJSON();
+model.save();
 
 ```
 
@@ -354,4 +359,47 @@ fruitSelector.disable()
 
 }
 ```
+
+## FAQ
+
+_Why Backbone?_
+
+It's well designed and has a clean api. There's no need to re-invent
+the wheel.
+
+_Why not just use Backbone Views?_
+
+Templating is useful for binding data to the DOM for some use cases. However,
+in some apps that have a heavy use of forms, or involve lots of interactivity,
+maintaining input states and re-rendering templates can be difficult to manage. 
+
+As a result, we sometimes we put login in templates that seems like its 
+begging to live in a javascript file. This library aims to solve this problem.
+
+Also, maintaining a consistent look and feel can become a burden. Tango helps by
+automating the creation of elements in a consistent manner and letting 
+you configure styles in a single place (the style config).
+
+
+_Why not just use Knockout?_
+
+Knockout is a wonderful project and definately provided some of the inspiration.
+
+However, much like with templating a lot of logic can end up in the template, when
+it would be easier to work with in javascript. 
+
+_Why another thing?_
+
+I'm as sick of the framework overload as anyone else. I couldn't find too many 
+solutions for two way binding and form widgets that didn't involve adopting a much
+larger framework along with it (I'm looking at you Angular, React, ExtJS, Kendo).
+
+The aim of tango is to provide a lightweight library for easy data binding and 
+high quality widgets that is easy to integrate into your app.
+
+
+
+
+
+
 
