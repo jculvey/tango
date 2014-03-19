@@ -369,16 +369,16 @@ the wheel.
 
 _Why not just use Backbone Views?_
 
-Templating is useful for binding data to the DOM for some use cases. However,
-in some apps that have a heavy use of forms, or involve lots of interactivity,
+Templating is a useful waty to bind data to the DOM in some use cases. However,
+in other apps that have a heavy use of forms or involve lots of interactivity,
 maintaining input states and re-rendering templates can be difficult to manage. 
 
-As a result, we sometimes we put login in templates that seems like its 
-begging to live in a javascript file. This library aims to solve this problem.
+As a result, we sometimes we put logic in templates that seems like it's 
+begging to live in javascript. This library aims to solve this problem.
 
 Also, maintaining a consistent look and feel can become a burden. Tango helps by
 automating the creation of elements in a consistent manner and letting 
-you configure styles in a single place (the style config).
+you configure styles in a single place.
 
 
 _Why not just use Knockout?_
