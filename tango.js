@@ -27,7 +27,7 @@
     }
   }
 
-  var styleConf = {
+  Tango.styleConfig = Tango._defaultStyleConfig = {
     containerClass: "form-group",
     labelClass: "control-label",
     textInputClass: "form-control",
@@ -44,30 +44,12 @@
     numberErr: "Must enter a numerical value.",
     minValErr: "Value must be greater than: <%= minValue %>.",
     maxValErr: "Value must be less than: <%= maxValue %>."
-
   };
 
   // Helper Functions
-  function createLabel(el, text) {
-    var cssClass = styleConf.labelClass;
-    var forId = el.attr('id');
-    var label = '<label for="' + forId + '" class="' + cssClass + '">'
-                + text + '</label>';
-    return $(label).insertBefore(el);
-  }
-
-  function createContainer(el) {
-    var cssClass = styleConf.containerClass;
-    var id = _.uniqueId('tango-');
-    var container = '<div class="' + cssClass + '" id="' + id + '">';
-    var containerEl = $(container).insertBefore(el);
-    containerEl.append(el);
-    return containerEl;
-  }
-
   function toggleErrorClass(el, containerEl, errors){
     var valid = errors.length === 0;
-    var errorClass = styleConf.errorClass;
+    var errorClass = Tango.styleConfig.errorClass;
     if(valid) {
       containerEl.removeClass(errorClass);
     }
@@ -115,15 +97,13 @@
     }
 
     // Create container
-    self.containerEl = createContainer(el);
+    self._createContainer();
 
     // Add Styling
-    el.addClass(styleConf.textInputClass);
+    el.addClass(Tango.styleConfig.textInputClass);
 
     // Create a label if needed
-    if (self._config.label) {
-      self.labelEl = createLabel(el, self._config.label);
-    }
+    self._createLabel();
 
     // validate initial state.
     self._validate();
@@ -183,6 +163,26 @@
 
   _.extend(TextInput.prototype, {
 
+
+    _createLabel: function() {
+      if (this._config.label) {
+        var cssClass = Tango.styleConfig.labelClass;
+        var forId = this.el.attr('id');
+        var label = '<label for="' + forId + '" class="' + cssClass + '">'
+                    + this._config.label + '</label>';
+        this.labelEl = $(label).insertBefore(this.el);
+      }
+    },
+
+    _createContainer: function() {
+      var cssClass = Tango.styleConfig.containerClass;
+      var id = _.uniqueId('tango-');
+      var container = '<div class="' + cssClass + '" id="' + id + '">';
+      var containerEl = $(container).insertBefore(this.el);
+      containerEl.append(this.el);
+      this.containerEl =  containerEl;
+    },
+
     value: function(newValue){
       if ( newValue !== undefined ) {
         this.lastValue = this.model.get(this._dataBind) || "";
@@ -234,7 +234,7 @@
       // Required
       if (conf.required) {
         if (!val) {
-          var errMsg = styleConf.requiredErr;
+          var errMsg = Tango.styleConfig.requiredErr;
           errors.push(errMsg);
         }
       }
@@ -243,7 +243,7 @@
       if (conf.maxLength) {
         if (val.length > conf.maxLength){
           var templateData = {maxLength: conf.maxLength}
-          var errMsg = _.template(styleConf.maxLenErr, templateData);
+          var errMsg = _.template(Tango.styleConfig.maxLenErr, templateData);
           errors.push(errMsg);
         }
       }
@@ -252,7 +252,7 @@
       if (conf.minLength) {
         if (val.length < conf.minLength){
           var templateData = {maxLength: conf.minLength}
-          var errMsg = _.template(styleConf.minLenErr, templateData);
+          var errMsg = _.template(Tango.styleConfig.minLenErr, templateData);
           errors.push(errMsg);
         }
       }
@@ -263,7 +263,7 @@
         var isNumber = $.isNumeric(val);
 
         if (val && !isNumber){
-          errors.push(styleConf.numberErr);
+          errors.push(Tango.styleConfig.numberErr);
         }
 
         // If a number validation spec was specified, check for min/max, etc.
@@ -273,13 +273,13 @@
 
           if(numberSpec.minValue && numberValue < numberSpec.minValue) {
             var templateData = {minValue: numberSpec.minValue}
-            var errMsg = _.template(styleConf.minValErr, templateData);
+            var errMsg = _.template(Tango.styleConfig.minValErr, templateData);
             errors.push(errMsg);
           }
 
           if(numberSpec.maxValue && numberValue > numberSpec.maxValue) {
             var templateData = {maxValue: numberSpec.maxValue}
-            var errMsg = _.template(styleConf.maxValErr, templateData);
+            var errMsg = _.template(Tango.styleConfig.maxValErr, templateData);
             errors.push(errMsg);
           }
         }
