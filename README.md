@@ -259,8 +259,8 @@ var age = new Tango.TextInput('age', {
   cssClass: 'form-control input-sm'
 }, model);
 
-var weight = new Tango.TextInput('age', {
-  label: 'Age:',
+var weight = new Tango.TextInput('weight', {
+  label: 'Weight:',
   labelClass: 'sr-only',
   containerClass: 'col-xs-2'
 }, model);
