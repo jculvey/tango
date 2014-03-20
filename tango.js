@@ -43,7 +43,10 @@
 
     numberErr: "Must enter a numerical value.",
     minValErr: "Value must be greater than: <%= minValue %>.",
-    maxValErr: "Value must be less than: <%= maxValue %>."
+    maxValErr: "Value must be less than: <%= maxValue %>.",
+
+    formatErr: "Invalid format.",
+    matchErr: "Confirmation must match."
   };
 
   // Helper Functions
@@ -58,111 +61,265 @@
     }
   }
 
-  var TextInput = Tango.TextInput = function(dataBind, config, model) {
-    var self = this;
-    self.errors = [];
-    self._dataBind = dataBind;
-    self._config = (config || {});
+  var WidgetBase = {
+    errors: [],
 
-    var el = $('[data-bind=' + dataBind + ']');
-    if (el.length == []) {
-      throw new Error("Couldn't find an input with the data-bind: " + dataBind);
-    }
-    else {
-      self.el = el;
-    }
+    initialize: function(dataBind, config, model) {
+      this._dataBind = dataBind;
+      this._config = (config || {});
 
-    if (!model) {
-      throw new Error("Can't initialize widget from empty model.");
-    }
-    else {
-      self.model = model;
-    }
-
-    // Set the initial value
-    var initialValue = el.val();
-    if(model.has(dataBind)){
-      initialValue = model.get(dataBind);
-      el.val(initialValue);
-    }
-    else {
-      model.set(dataBind, initialValue);
-    }
-    self.lastValue = initialValue;
-
-    // Set the identifier for later use
-    var id = el.attr('id');
-    if (!id) {
-      el.attr('id', _.uniqueId('tango-'));
-    }
-
-    // Create container
-    self._createContainer();
-
-    // Add Styling
-    el.addClass(Tango.styleConfig.textInputClass);
-
-    // Create a label if needed
-    self._createLabel();
-
-    // validate initial state.
-    self._validate();
-
-    /// Data binding
-    // Wire model to widget 
-    // Handle model changes to just this attribute
-    var event = 'change:' + dataBind;
-    model.on(event, function() {
-      el.val(self.model.get(self._dataBind));
-
-      // Re-validate
-      self._validate();
-    }, self);
-
-
-    function modelChangeHandler(fn, trueCb, falseCb) {
-      if (fn) {
-        var cond = fn(this.model);
-        if (cond) {
-          trueCb.call(this);
-        }
-        else {
-          falseCb.call(this);
-        }
+      var el = $('[data-bind=' + dataBind + ']');
+      if (el.length == []) {
+        throw new Error("Couldn't find an input with the data-bind: " + dataBind);
       }
-    }
+      else {
+        this.el = el;
+      }
 
-    // Handle visible and enabled for initial state
-    modelChangeHandler.call(self, self._config.enableFn, self.enable, self.disable);
-    modelChangeHandler.call(self, self._config.visibleFn, self.show, self.hide);
+      this.model = model;
 
-    // Handle global model change
-    model.on("change", function() {
-      modelChangeHandler.call(self, config.enableFn, self.enable, self.disable);
-      modelChangeHandler.call(self, config.visibleFn, self.show, self.hide);
-    }, self);
+      //if (!model) {
+        //throw new Error("Can't initialize widget from empty model.");
+      //}
+      //else {
+        //this.model = model;
+      //}
 
-    // Wire widget to model 
-    function inputChangeHandler(event){
-      self._validate();
-      var val = $(this).val();
-      self.value($(this).val());
-    };
+      // Set the initial value
+      var initialValue = this.el.val();
+      if(model.has(dataBind)){
+        initialValue = model.get(dataBind);
+        this.el.val(initialValue);
+      }
+      else {
+        model.set(dataBind, initialValue);
+      }
+      this.lastValue = initialValue;
 
-    el.on('change', inputChangeHandler);
-    el.on('keyup', inputChangeHandler);
+      // Set the identifier for later use
+      var id = this.el.attr('id');
+      if (!id) {
+        this.el.attr('id', _.uniqueId('tango-'));
+      }
 
-    // if a match validator exists, re-validate when the target changes.
-    if ( self._config.validate && self._config.validate.matches ) {
-      var matchingEl = $('[data-bind=' + self._config.validate.matches.target + ']');
-      matchingEl.keyup( $.proxy(self._validate, self) );
-      matchingEl.on('change', $.proxy(self._validate, self) );
+      // Create container
+      this._createContainer();
+
+      // Create a label if needed
+      this._createLabel();
+
+      // Add Styling
+      this._applyStyling();
+
+      // Handle visible and enabled for initial state
+      modelChangeHandler.call(this, this._config.enableFn, this.enable, this.disable);
+      modelChangeHandler.call(this, this._config.visibleFn, this.show, this.hide);
+
+      // Handle global model change
+      model.on("change", function() {
+        modelChangeHandler.call(this, config.enableFn, this.enable, this.disable);
+        modelChangeHandler.call(this, config.visibleFn, this.show, this.hide);
+      }, this);
+
+    },
+
+    // To be overridden by subclass if they have any validators
+    _validateFunctions: [],
+
+    _validate: function(){
+      if (!this._config.validate) {
+        return;
+      }
+
+      var errors = [];
+      _.each(this._validateFunctions, function(fn) {
+        // sort of wasteful, but meh.
+        errors = errors.concat(fn.call(this, this._config.validate));
+      }, this);
+
+      toggleErrorClass(this.el, this.containerEl, errors);
+      this.errors = errors;
     }
 
   };
 
-  _.extend(TextInput.prototype, {
+  function modelChangeHandler(fn, trueCb, falseCb) {
+    if (fn) {
+      var cond = fn(this.model);
+      if (cond) {
+        trueCb.call(this);
+      }
+      else {
+        falseCb.call(this);
+      }
+    }
+  }
 
+  function validateRequired(conf) {
+    var val = this.el.val();
+    var errors = [];
+
+    if (conf.required) {
+      if (!val) {
+        var errMsg = Tango.styleConfig.requiredErr;
+        errors.push(errMsg);
+      }
+    }
+
+    return errors;
+  }
+
+  function validateMaxLength(conf) {
+    var val = this.el.val();
+    var errors = [];
+
+    if (conf.maxLength) {
+      if (val.length > conf.maxLength){
+        var templateData = {maxLength: conf.maxLength}
+        var errMsg = _.template(Tango.styleConfig.maxLenErr, templateData);
+        errors.push(errMsg);
+      }
+    }
+
+    return errors;
+  }
+
+  function validateMinLength(conf) {
+    var val = this.el.val();
+    var errors = [];
+
+    if (conf.minLength) {
+      if (val.length < conf.minLength){
+        var templateData = {maxLength: conf.minLength}
+        var errMsg = _.template(Tango.styleConfig.minLenErr, templateData);
+        errors.push(errMsg);
+      }
+    }
+
+    return errors;
+  }
+
+  function validateNumber(conf) {
+    var val = this.el.val();
+    var errors = [];
+
+    var numberSpec = conf.number;
+    if (numberSpec) {
+      var isNumber = $.isNumeric(val);
+
+      if (val && !isNumber){
+        errors.push(Tango.styleConfig.numberErr);
+      }
+
+      // If a number validation spec was specified, check for min/max, etc.
+      // number: { min: 20, max: 40 }
+      if(val && _.isObject(numberSpec) && isNumber){
+        var numberValue = parseFloat(val) || parseInt(val);
+
+        if(numberSpec.minValue && numberValue < numberSpec.minValue) {
+          var templateData = {minValue: numberSpec.minValue}
+          var errMsg = _.template(Tango.styleConfig.minValErr, templateData);
+          errors.push(errMsg);
+        }
+
+        if(numberSpec.maxValue && numberValue > numberSpec.maxValue) {
+          var templateData = {maxValue: numberSpec.maxValue}
+          var errMsg = _.template(Tango.styleConfig.maxValErr, templateData);
+          errors.push(errMsg);
+        }
+      }
+    }
+
+    return errors;
+  }
+
+  function validateFormat(conf) {
+    var val = this.el.val();
+    var errors = [];
+
+    if (conf.format) {
+      var regex = conf.format.regex;
+
+      if (val && regex && !regex.exec(val)){
+        if (conf.format.errorMsg) {
+          errors.push(conf.format.errorMsg);
+        }
+        else {
+          errors.push(Tango.styleConfig.formatErr);
+        }
+      }
+    }
+
+    return errors;
+  }
+
+  function validateMatches(conf) {
+    var val = this.el.val();
+    var errors = [];
+
+    if (conf.matches) {
+      var matchingEl = $('[data-bind=' + conf.matches.target + ']');
+
+      if (!!matchingEl.length) {
+        if ( val && !(val === matchingEl.val()) ){
+          if (conf.matches.errorMsg) {
+            errors.push(conf.matches.errorMsg);
+          }
+          else {
+            errors.push(Tango.styleConfig.matchErr);
+          }
+        }
+      }
+      else {
+        log('Invalid target for match validator: ' + conf.matches.target);
+      }
+    }
+
+    return errors;
+  }
+
+  var TextInput = Tango.TextInput = function(dataBind, config, model) {
+    this.initialize.apply(this, arguments);
+  };
+
+  _.extend(TextInput.prototype, WidgetBase, {
+    superclass: WidgetBase,
+
+    initialize: function(dataBind, config, model) {
+      this.superclass.initialize.apply(this, arguments);
+
+      // validate initial state.
+      this._validate();
+
+      /// Data binding
+      // Wire model to widget 
+      // Handle model changes to just this attribute
+      var event = 'change:' + dataBind;
+      model.on(event, function() {
+        this.el.val(this.model.get(this._dataBind));
+        this._validate();
+      }, this);
+
+      // Wire widget to model 
+      var self = this;
+      this.el.on('change', function(e){
+        var val = $(this).val();
+        self.value($(this).val());
+      });
+
+      this.el.on('keyup', function(e){
+        var val = $(this).val();
+        self.value($(this).val());
+      });
+
+      // if a match validator exists, re-validate when the target changes.
+      if ( this._config.validate && this._config.validate.matches ) {
+        var matchingEl = $('[data-bind=' + this._config.validate.matches.target + ']');
+        matchingEl.keyup( $.proxy(this._validate, this) );
+        matchingEl.on('change', $.proxy(this._validate, this) );
+      }
+
+    },
 
     _createLabel: function() {
       if (this._config.label) {
@@ -182,6 +339,19 @@
       containerEl.append(this.el);
       this.containerEl =  containerEl;
     },
+
+    _applyStyling: function() {
+      this.el.addClass(Tango.styleConfig.textInputClass);
+    },
+
+    _validateFunctions: [
+      validateRequired,
+      validateMinLength,
+      validateMaxLength,
+      validateNumber,
+      validateFormat,
+      validateMatches
+    ],
 
     value: function(newValue){
       if ( newValue !== undefined ) {
@@ -210,7 +380,7 @@
     },
 
     reset: function(){
-      // Don't use self.value so that the lastValue is reset as well.
+      // Don't use this.value so that the lastValue is reset as well.
       this.model.set(this.dataBind, this.lastValue);
     },
 
@@ -222,108 +392,7 @@
       return this.errors.length == 0;
     },
 
-    _validate: function(){
-      if (!this._config.validate) {
-        return;
-      }
-
-      var errors = [];
-      var val = this.el.val();
-      var conf = this._config.validate;
-
-      // Required
-      if (conf.required) {
-        if (!val) {
-          var errMsg = Tango.styleConfig.requiredErr;
-          errors.push(errMsg);
-        }
-      }
-
-      // Max Length
-      if (conf.maxLength) {
-        if (val.length > conf.maxLength){
-          var templateData = {maxLength: conf.maxLength}
-          var errMsg = _.template(Tango.styleConfig.maxLenErr, templateData);
-          errors.push(errMsg);
-        }
-      }
-
-      // Min Length
-      if (conf.minLength) {
-        if (val.length < conf.minLength){
-          var templateData = {maxLength: conf.minLength}
-          var errMsg = _.template(Tango.styleConfig.minLenErr, templateData);
-          errors.push(errMsg);
-        }
-      }
-
-      // Numbers
-      var numberSpec = conf.number;
-      if (numberSpec) {
-        var isNumber = $.isNumeric(val);
-
-        if (val && !isNumber){
-          errors.push(Tango.styleConfig.numberErr);
-        }
-
-        // If a number validation spec was specified, check for min/max, etc.
-        // number: { min: 20, max: 40 }
-        if(val && _.isObject(numberSpec) && isNumber){
-          var numberValue = parseFloat(val) || parseInt(val);
-
-          if(numberSpec.minValue && numberValue < numberSpec.minValue) {
-            var templateData = {minValue: numberSpec.minValue}
-            var errMsg = _.template(Tango.styleConfig.minValErr, templateData);
-            errors.push(errMsg);
-          }
-
-          if(numberSpec.maxValue && numberValue > numberSpec.maxValue) {
-            var templateData = {maxValue: numberSpec.maxValue}
-            var errMsg = _.template(Tango.styleConfig.maxValErr, templateData);
-            errors.push(errMsg);
-          }
-        }
-      }
-
-      // Format
-      if (conf.format) {
-        var regex = conf.format.regex;
-
-        if (val && regex && !regex.exec(val)){
-          if (conf.format.errorMsg) {
-            errors.push(conf.format.errorMsg);
-          }
-          else {
-            errors.push("Invalid format.");
-          }
-        }
-      }
-
-      // Matches
-      if (conf.matches) {
-        var matchingEl = $('[data-bind=' + conf.matches.target + ']');
-
-        if (!!matchingEl.length) {
-          if ( val && !(val === matchingEl.val()) ){
-            if (conf.matches.errorMsg) {
-              errors.push(conf.matches.errorMsg);
-            }
-            else {
-              errors.push("Confirmation must match.");
-            }
-          }
-        }
-        else {
-          log('Invalid target for match validator: ' + conf.matches.target);
-        }
-      }
-
-      toggleErrorClass(this.el, this.containerEl, errors);
-      this.errors = errors;
-    }
-
   });
-
 
   root.Tango = Tango;
 
