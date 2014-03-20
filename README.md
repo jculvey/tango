@@ -290,7 +290,7 @@ commentBox.addValidator( function(conf) {
   var errors = [];
 
   if (conf.awesome) {
-    if (val.search('awesome')) {
+    if (!val.search('awesome')) {
       errors.push("That isn't awesome.");
     }
   }
