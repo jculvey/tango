@@ -53,6 +53,48 @@ test( "basic minimal input usage", function() {
   ok( fname.errors.length == 0 );
 });
 
+// Attributes
+test( "label attribute", function() {
+  var party = new Tango.TextInput('party', {
+    label: "Political Party"
+  }, model);
+
+  ok( party.labelEl.text() == "Political Party" );
+});
+
+test( "placeholder attribute", function() {
+  var party = new Tango.TextInput('party', {
+    label: "Political Party",
+    placeholder: "Ex. Libertarian"
+  }, model);
+
+  ok( party.el.prop('placeholder') == 'Ex. Libertarian' );
+});
+
+test( "cssClass attribute", function() {
+  var age = new Tango.TextInput('age', {
+    cssClass: 'form-control input-sm'
+  }, model);
+
+  ok( age.el.hasClass('input-sm') );
+});
+
+test( "containerClass attribute", function() {
+  var age = new Tango.TextInput('age', {
+    containerClass: 'col-xs-2'
+  }, model);
+
+  ok( age.containerEl.hasClass('col-xs-2') );
+});
+
+test( "labelClass attribute", function() {
+  var age = new Tango.TextInput('age', {
+    label: 'Age:',
+    labelClass: 'sr-only'
+  }, model);
+
+  ok( age.labelEl.hasClass('sr-only') );
+});
 
 test( "model change", function() {
   var fname = new Tango.TextInput('firstName', {

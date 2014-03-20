@@ -245,6 +245,61 @@ button.on('click', function(){
 
 ```
 
+## Custom Styling
+
+You can easily over-ride the classes applied to the widget source element with
+the config property `cssClass`. You can also override the classes applied to the
+container element and label element with `config.containerClass` and 
+`config.labelClass`, respectively.
+
+```js
+
+var age = new Tango.TextInput('age', {
+  label: 'Age:',
+  cssClass: 'form-control input-sm'
+}, model);
+
+var weight = new Tango.TextInput('age', {
+  label: 'Age:',
+  labelClass: 'sr-only',
+  containerClass: 'col-xs-2'
+}, model);
+
+```
+
+## Custom Validators
+
+Tango widgets have an extensible validator system. To add a custom
+validator to your widget, simply call `widget.addValidator(callback)`,
+where callback receives a copy of the `config.validate` object and returns
+an array of error messages. It receives a context of the widget instance
+that can be accessed with `this`.
+
+### Usage Example
+
+```js
+var commentBox = Tango.TextInput('comment', {
+  validate: {
+    awesome: true
+  }
+}, model);
+
+
+commentBox.addValidator( function(conf) {
+  var val = this.el.val();
+  var errors = [];
+
+  if (conf.awesome) {
+    if (val.search('awesome')) {
+      errors.push("That isn't awesome.");
+    }
+  }
+
+  return errors;
+});
+
+```
+
 ## Forms
 
 ### Usage Example
@@ -283,40 +338,6 @@ form.submit({
 form.toJson() // => { firstName: 'George', lastName: 'Washington' }
 
 ```
-
-## Custom Validators
-
-Tango widgets have an extensible validator system. To add a custom
-validator to your widget, simply call `widget.addValidator(callback)`,
-where callback receives a copy of the `config.validate` object and returns
-an array of error messages. It receives a context of the widget instance
-that can be accessed with `this`.
-
-### Usage Example
-
-```js
-var commentBox = Tango.TextInput('comment', {
-  validate: {
-    awesome: true
-  }
-}, model);
-
-
-commentBox.addValidator( function(conf) {
-  var val = this.el.val();
-  var errors = [];
-
-  if (conf.awesome) {
-    if (val.search('awesome')) {
-      errors.push("That isn't awesome.");
-    }
-  }
-
-  return errors;
-});
-
-```
-
 
 ## Tables
 

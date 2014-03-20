@@ -289,8 +289,13 @@
   _.extend(TextInput.prototype, WidgetBase, {
     superclass: WidgetBase,
 
-    initialize: function(dataBind, config, model) {
+    initialize: function() {
       this.superclass.initialize.apply(this, arguments);
+
+      // Add widget specific attributes
+      if (this._config.placeholder) {
+        this.el.prop('placeholder', this._config.placeholder);
+      }
 
       // validate initial state.
       this._validate();
@@ -298,7 +303,7 @@
       /// Data binding
       // Wire model to widget 
       // Handle model changes to just this attribute
-      var event = 'change:' + dataBind;
+      var event = 'change:' + this._dataBind;
       model.on(event, function() {
         this.el.val(this.model.get(this._dataBind));
         this._validate();
@@ -327,7 +332,8 @@
 
     _createLabel: function() {
       if (this._config.label) {
-        var cssClass = Tango.styleConfig.labelClass;
+        var cssClass = this._config.labelClass ||
+                       Tango.styleConfig.labelClass;
         var forId = this.el.attr('id');
         var label = '<label for="' + forId + '" class="' + cssClass + '">'
                     + this._config.label + '</label>';
@@ -336,7 +342,7 @@
     },
 
     _createContainer: function() {
-      var cssClass = Tango.styleConfig.containerClass;
+      var cssClass = this._config.containerClass || Tango.styleConfig.containerClass;
       var id = _.uniqueId('tango-');
       var container = '<div class="' + cssClass + '" id="' + id + '">';
       var containerEl = $(container).insertBefore(this.el);
@@ -345,7 +351,8 @@
     },
 
     _applyStyling: function() {
-      this.el.addClass(Tango.styleConfig.textInputClass);
+      var cssClass = this._config.cssClass || Tango.styleConfig.textInputClass;
+      this.el.addClass(cssClass);
     },
 
     _validateFunctions: [
