@@ -248,8 +248,8 @@ button.on('click', function(){
 ## Custom Styling
 
 You can easily over-ride the classes applied to the widget source element with
-the config property `cssClass`. You can also override the classes applied to the
-container element and label element with `config.containerClass` and 
+the config property `config.cssClass`. You can also override the classes applied 
+to the container element and label element with `config.containerClass` and 
 `config.labelClass`, respectively.
 
 ```js
