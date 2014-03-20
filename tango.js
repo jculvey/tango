@@ -123,6 +123,10 @@
 
     },
 
+    addValidator: function(fn) {
+      _validateFunctions.push(fn);
+    },
+
     // To be overridden by subclass if they have any validators
     _validateFunctions: [],
 

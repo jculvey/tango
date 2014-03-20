@@ -284,6 +284,40 @@ form.toJson() // => { firstName: 'George', lastName: 'Washington' }
 
 ```
 
+## Custom Validators
+
+Tango widgets have an extensible validator system. To add a custom
+validator to your widget, simply call `widget.addValidator(callback)`,
+where callback receives a copy of the `config.validate` object and returns
+an array of error messages. It receives a context of the widget instance
+that can be accessed with `this`.
+
+### Usage Example
+
+```js
+var commentBox = Tango.TextInput('comment', {
+  validate: {
+    awesome: true
+  }
+}, model);
+
+
+commentBox.addValidator( function(conf) {
+  var val = this.el.val();
+  var errors = [];
+
+  if (conf.awesome) {
+    if (val.search('awesome')) {
+      errors.push("That isn't awesome.");
+    }
+  }
+
+  return errors;
+});
+
+```
+
+
 ## Tables
 
 Under development...
@@ -317,8 +351,9 @@ fruitSelector.hide()
 fruitSelector.enable()
 fruitSelector.disable()
 
+
 // Widget config items
-{
+var config = {
   label: "Foo",
 
   validate: {
@@ -342,7 +377,7 @@ fruitSelector.disable()
       errorMessage: "Confirmation must match password."
     },
 
-    custom: ['ipv4addr']
+    awesome: true
   },
 
   enabledFn: function(model) {
