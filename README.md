@@ -8,18 +8,24 @@ Still a work in progress.
 Tango is a javascript widget library that provides automatic two way binding
 and easy input validation.
 
-Tango provides widgets for:
-  - Form Handling
-  - Inputs
-    - text fields
-    - textareas
-    - select lists
-    - checkboxes
-    - radio buttons
-    - autocompletion
-    - datepicker
-  - Lists
-  - Tables
+Widgets:
+  - Text Fields
+  - Textareas *
+  - Select lists *
+  - Checkboxes *
+  - Radio buttons *
+  - Forms *
+  - Autocompletion *
+  - Datepicker *
+  - Colorpicker *
+  - Password *
+  - Email *
+  - Hidden input *
+  - Links *
+  - Lists *
+  - Tables *
+ 
+* _indicates still under development._
 
 It can easily integrate with off the shelf CSS packages like Bootstrap 
 and Foundation.
@@ -449,6 +455,10 @@ _Why another thing?_
 I'm as sick of the framework overload as anyone else. I couldn't find too many 
 solutions for two way binding and form widgets that didn't involve adopting a much
 larger framework along with it (I'm looking at you Angular, React, ExtJS, Kendo).
+
+While there have been many great attempts at client side MVC frameworks, you don't
+find many of the conveniences that you can in server side MVC frameworks that solve
+froms, such as the form helper of rails, or the helper functions in django.forms.
 
 The aim of tango is to provide a lightweight library for easy data binding and 
 high quality widgets that is easy to integrate into your app.
