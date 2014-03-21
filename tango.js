@@ -31,6 +31,7 @@
     containerClass: "form-group",
     labelClass: "control-label",
     textInputClass: "form-control",
+    textAreaClass: "form-control",
 
     // Status classes
     warningClass: "has-warning",
@@ -111,6 +112,25 @@
       // Add Styling
       this._applyStyling();
 
+      // validate initial state.
+      this._validate();
+
+      /// Data binding
+      // Wire model to widget 
+      // Handle model changes to just this attribute
+      var event = 'change:' + this._dataBind;
+      model.on(event, function() {
+        this.el.val(this.model.get(this._dataBind));
+        this._validate();
+      }, this);
+
+      // Wire widget to model 
+      var self = this;
+      this.el.on('change', function(e){
+        var val = $(this).val();
+        self.value($(this).val());
+      });
+
       // Handle visible and enabled for initial state
       modelChangeHandler.call(this, this._config.enableFn, this.enable, this.disable);
       modelChangeHandler.call(this, this._config.visibleFn, this.show, this.hide);
@@ -125,6 +145,31 @@
 
     addValidator: function(fn) {
       _validateFunctions.push(fn);
+    },
+
+    _createLabel: function() {
+      if (this._config.label) {
+        var cssClass = this._config.labelClass ||
+                       Tango.styleConfig.labelClass;
+        var forId = this.el.attr('id');
+        var label = '<label for="' + forId + '" class="' + cssClass + '">'
+                    + this._config.label + '</label>';
+        this.labelEl = $(label).insertBefore(this.el);
+      }
+    },
+
+    _createContainer: function() {
+      var cssClass = this._config.containerClass || Tango.styleConfig.containerClass;
+      var id = _.uniqueId('tango-');
+      var container = '<div class="' + cssClass + '" id="' + id + '">';
+      var containerEl = $(container).insertBefore(this.el);
+      containerEl.append(this.el);
+      this.containerEl =  containerEl;
+    },
+
+    _applyStyling: function() {
+      var cssClass = this._config.cssClass || Tango.styleConfig.textInputClass;
+      this.el.addClass(cssClass);
     },
 
     // To be overridden by subclass if they have any validators
@@ -143,6 +188,45 @@
 
       toggleErrorClass(this.el, this.containerEl, errors);
       this.errors = errors;
+    },
+
+    show: function(){
+      this.containerEl.show();
+    },
+
+    hide: function(){
+      this.containerEl.hide();
+    },
+
+    enable: function(){
+      this.el.prop('disabled', false);
+    },
+
+    disable: function(){
+      this.el.prop('disabled', true);
+    },
+
+    reset: function(){
+      // Don't use this.value so that the lastValue is reset as well.
+      this.model.set(this.dataBind, this.lastValue);
+    },
+
+    modified: function() {
+      return this.value() !== this.lastValue;
+    },
+
+    isValid: function(){
+      return this.errors.length == 0;
+    },
+
+    value: function(newValue){
+      if ( newValue !== undefined ) {
+        this.lastValue = this.model.get(this._dataBind) || "";
+        this.model.set(this._dataBind, newValue);
+      }
+      else {
+        return this.model.get(this._dataBind);
+      }
     }
 
   };
@@ -297,25 +381,7 @@
         this.el.prop('placeholder', this._config.placeholder);
       }
 
-      // validate initial state.
-      this._validate();
-
-      /// Data binding
-      // Wire model to widget 
-      // Handle model changes to just this attribute
-      var event = 'change:' + this._dataBind;
-      model.on(event, function() {
-        this.el.val(this.model.get(this._dataBind));
-        this._validate();
-      }, this);
-
-      // Wire widget to model 
       var self = this;
-      this.el.on('change', function(e){
-        var val = $(this).val();
-        self.value($(this).val());
-      });
-
       this.el.on('keyup', function(e){
         var val = $(this).val();
         self.value($(this).val());
@@ -330,31 +396,6 @@
 
     },
 
-    _createLabel: function() {
-      if (this._config.label) {
-        var cssClass = this._config.labelClass ||
-                       Tango.styleConfig.labelClass;
-        var forId = this.el.attr('id');
-        var label = '<label for="' + forId + '" class="' + cssClass + '">'
-                    + this._config.label + '</label>';
-        this.labelEl = $(label).insertBefore(this.el);
-      }
-    },
-
-    _createContainer: function() {
-      var cssClass = this._config.containerClass || Tango.styleConfig.containerClass;
-      var id = _.uniqueId('tango-');
-      var container = '<div class="' + cssClass + '" id="' + id + '">';
-      var containerEl = $(container).insertBefore(this.el);
-      containerEl.append(this.el);
-      this.containerEl =  containerEl;
-    },
-
-    _applyStyling: function() {
-      var cssClass = this._config.cssClass || Tango.styleConfig.textInputClass;
-      this.el.addClass(cssClass);
-    },
-
     _validateFunctions: [
       validateRequired,
       validateMinLength,
@@ -364,44 +405,36 @@
       validateMatches
     ],
 
-    value: function(newValue){
-      if ( newValue !== undefined ) {
-        this.lastValue = this.model.get(this._dataBind) || "";
-        this.model.set(this._dataBind, newValue);
+  });
+
+  var TextArea = Tango.TextArea = function(dataBind, config, model) {
+    this.initialize.apply(this, arguments);
+  };
+
+  _.extend(TextArea.prototype, WidgetBase, {
+    superclass: WidgetBase,
+
+    initialize: function() {
+      this.superclass.initialize.apply(this, arguments);
+
+      // Add widget specific attributes
+      if (this._config.placeholder) {
+        this.el.prop('placeholder', this._config.placeholder);
       }
-      else {
-        return this.model.get(this._dataBind);
-      }
+
+      var self = this;
+      this.el.on('keyup', function(e){
+        var val = $(this).val();
+        self.value($(this).val());
+      });
+
     },
 
-    show: function(){
-      this.containerEl.show();
-    },
-
-    hide: function(){
-      this.containerEl.hide();
-    },
-
-    enable: function(){
-      this.el.prop('disabled', false);
-    },
-
-    disable: function(){
-      this.el.prop('disabled', true);
-    },
-
-    reset: function(){
-      // Don't use this.value so that the lastValue is reset as well.
-      this.model.set(this.dataBind, this.lastValue);
-    },
-
-    modified: function() {
-      return this.value() !== this.lastValue;
-    },
-
-    isValid: function(){
-      return this.errors.length == 0;
-    },
+    _validateFunctions: [
+      validateRequired,
+      validateMinLength,
+      validateMaxLength
+    ]
 
   });
 

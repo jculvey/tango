@@ -25,7 +25,7 @@ Widgets:
   - Lists *
   - Tables *
  
-(*) _indicates still under development._
+Asterix denotes that this is still under development.
 
 It can easily integrate with off the shelf CSS packages like Bootstrap 
 and Foundation.

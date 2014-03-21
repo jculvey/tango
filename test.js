@@ -18,7 +18,6 @@ var fname = new Tango.TextInput('firstName', {
 
 var age = new Tango.TextInput('age', {
   label: 'Age',
-  containerClass: "col-xs-2",
   validate: {
     required: true,
     number: true
@@ -27,8 +26,6 @@ var age = new Tango.TextInput('age', {
 
 var weight = new Tango.TextInput('weight', {
   label: 'Weight',
-  cssClass: "form-control input-lg",
-  containerClass: "col-xs-2",
   validate: {
     number: {
       minValue: 100,
@@ -40,7 +37,6 @@ var weight = new Tango.TextInput('weight', {
 var weight2 = new Tango.TextInput('weight2', {
   label: 'Weight 2',
   cssClass: "form-control input-sm",
-  containerClass: "col-xs-2",
   validate: {
     required: true,
     matches: {
@@ -71,6 +67,11 @@ var party = new Tango.TextInput('party', {
   placeholder: "Ex. Libertarian"
 }, model);
 
+
+var blurb = new Tango.TextArea('blurb', {
+  label: "Blurb:",
+  placeholder: "Enlightening Information"
+}, model);
 
 // More complicated view models
 var ViewModel = Backbone.Model.extend({
