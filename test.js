@@ -67,12 +67,6 @@ var party = new Tango.TextInput('party', {
   placeholder: "Ex. Libertarian"
 }, model);
 
-
-var blurb = new Tango.TextArea('blurb', {
-  label: "Blurb:",
-  placeholder: "Enlightening Information"
-}, model);
-
 // More complicated view models
 var ViewModel = Backbone.Model.extend({
   fullName: function() {
@@ -85,5 +79,26 @@ var viewModel = new ViewModel({
   lastName: 'Washington',
   dob: '2/22/1732'
 });
+
+var blurb = new Tango.TextArea('blurb', {
+  label: "Blurb:",
+  placeholder: "Enlightening Information"
+}, model);
+
+var enableCheats = new Tango.Checkbox('cheats', {
+  label: "Enable Cheats"
+}, model);
+
+
+
+
+
+
+
+
+
+
+
+
 
 

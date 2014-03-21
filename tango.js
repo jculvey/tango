@@ -30,8 +30,12 @@
   Tango.styleConfig = Tango._defaultStyleConfig = {
     containerClass: "form-group",
     labelClass: "control-label",
+
     textInputClass: "form-control",
     textAreaClass: "form-control",
+
+    checkboxContainerClass: "checkbox",
+    checkboxClass: "",
 
     // Status classes
     warningClass: "has-warning",
@@ -168,7 +172,7 @@
     },
 
     _applyStyling: function() {
-      var cssClass = this._config.cssClass || Tango.styleConfig.textInputClass;
+      var cssClass = this._config.cssClass || this._defaultCssClass;
       this.el.addClass(cssClass);
     },
 
@@ -221,6 +225,7 @@
 
     value: function(newValue){
       if ( newValue !== undefined ) {
+        debugger;
         this.lastValue = this.model.get(this._dataBind) || "";
         this.model.set(this._dataBind, newValue);
       }
@@ -373,12 +378,13 @@
   _.extend(TextInput.prototype, WidgetBase, {
     superclass: WidgetBase,
 
-    initialize: function() {
+    initialize: function(dataBind, config, model) {
       this.superclass.initialize.apply(this, arguments);
+      config = (config || {});
 
       // Add widget specific attributes
-      if (this._config.placeholder) {
-        this.el.prop('placeholder', this._config.placeholder);
+      if (config.placeholder) {
+        this.el.prop('placeholder', config.placeholder);
       }
 
       var self = this;
@@ -388,13 +394,15 @@
       });
 
       // if a match validator exists, re-validate when the target changes.
-      if ( this._config.validate && this._config.validate.matches ) {
-        var matchingEl = $('[data-bind=' + this._config.validate.matches.target + ']');
+      if ( config.validate && config.validate.matches ) {
+        var matchingEl = $('[data-bind=' + config.validate.matches.target + ']');
         matchingEl.keyup( $.proxy(this._validate, this) );
         matchingEl.on('change', $.proxy(this._validate, this) );
       }
 
     },
+
+    _defaultCssClass: Tango.styleConfig.textInputClass,
 
     _validateFunctions: [
       validateRequired,
@@ -414,19 +422,20 @@
   _.extend(TextArea.prototype, WidgetBase, {
     superclass: WidgetBase,
 
-    initialize: function() {
+    initialize: function(dataBind, config, model) {
       this.superclass.initialize.apply(this, arguments);
+      config = (config || {});
 
       // Add widget specific attributes
-      if (this._config.placeholder) {
-        this.el.prop('placeholder', this._config.placeholder);
+      if (config.placeholder) {
+        this.el.prop('placeholder', config.placeholder);
       }
 
-      if (this._config.rows) {
-        this.el.prop('rows', this._config.rows);
+      if (config.rows) {
+        this.el.prop('rows', config.rows);
       }
-      if (this._config.cols) {
-        this.el.prop('cols', this._config.cols);
+      if (config.cols) {
+        this.el.prop('cols', config.cols);
       }
 
       var self = this;
@@ -437,11 +446,67 @@
 
     },
 
+    _defaultCssClass: Tango.styleConfig.textAreaClass,
+
     _validateFunctions: [
       validateRequired,
       validateMinLength,
       validateMaxLength
     ]
+
+  });
+
+  var Checkbox = Tango.Checkbox = function(dataBind, config, model) {
+    this.initialize.apply(this, arguments);
+  };
+
+  _.extend(Checkbox.prototype, WidgetBase, {
+    superclass: WidgetBase,
+
+    initialize: function(dataBind, config, model) {
+      this.superclass.initialize.apply(this, arguments);
+      config = (config || {});
+
+      // Set the initial value
+      var initialValue = this.el.prop('checked');
+      if(model.has(dataBind)){
+        modelVal = model.get(dataBind);
+        initialValue = (_.isBoolean(modelVal) && modelVal) || false;
+
+        // If the val already in the model isn't a boolean, reinitialize as a bool.
+        if ( !_.isBoolean(modelVal) ) {
+          model.set(dataBind, !!initialValue);
+        }
+
+        this.el.val(initialValue);
+      }
+      else {
+        model.set(dataBind, initialValue);
+      }
+      this.lastValue = initialValue;
+    },
+
+    _defaultCssClass: Tango.styleConfig.checkboxClass,
+
+    _createContainer: function() {
+      var cssClass = this._config.containerClass ||
+                     Tango.styleConfig.checkboxContainerClass;
+      var id = _.uniqueId('tango-');
+      var container = '<div class="' + cssClass + '" id="' + id + '">';
+      var containerEl = $(container).insertBefore(this.el);
+      containerEl.append(this.el);
+      this.containerEl =  containerEl;
+    },
+
+    value: function(newValue){
+      if ( newValue !== undefined ) {
+        this.lastValue = this.model.get(this._dataBind) || false;
+        this.model.set(this._dataBind, !!newValue);
+      }
+      else {
+        return this.model.get(this._dataBind);
+      }
+    }
 
   });
 

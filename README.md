@@ -10,10 +10,10 @@ and easy input validation.
 
 Widgets:
   - Text Fields
-  - Textareas *
-  - Select lists *
-  - Checkboxes *
+  - Textareas 
+  - Checkboxes
   - Radio buttons *
+  - Select lists *
   - Forms *
   - Autocompletion *
   - Datepicker *
@@ -114,7 +114,7 @@ var model = new Backbone.Model({
   enableCheats: true
 });
 
-Tango.TextArea('enableCheats', {
+Tango.Checkbox('enableCheats', {
   label: "Are you cheating?",
 }, model);
 
