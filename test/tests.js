@@ -491,4 +491,15 @@ test( "textarea validator", function() {
 });
 
 
+test( "textarea rows cols", function() {
+  var post = new Tango.TextArea('post', {
+    label: 'Post',
+    rows: 10,
+    cols: 10
+  }, model);
+
+  ok( post.el.prop('rows') == 10 );
+  ok( post.el.prop('cols') == 10 );
+});
+
 

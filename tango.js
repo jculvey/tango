@@ -422,6 +422,13 @@
         this.el.prop('placeholder', this._config.placeholder);
       }
 
+      if (this._config.rows) {
+        this.el.prop('rows', this._config.rows);
+      }
+      if (this._config.cols) {
+        this.el.prop('cols', this._config.cols);
+      }
+
       var self = this;
       this.el.on('keyup', function(e){
         var val = $(this).val();
