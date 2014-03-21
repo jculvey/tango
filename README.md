@@ -153,7 +153,7 @@ var model = new Backbone.Model({
   fruits: "banana"
 });
 
-var fruit = Tango.selectWidget('fruits', {
+var fruit = Tango.Select('fruits', {
   options: [
     ['apple', 'Apple'],
     ['banana', 'Banana'],
