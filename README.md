@@ -1,4 +1,4 @@
-tango
+Tango
 =====
 
 Still a work in progress.
@@ -25,7 +25,7 @@ Widgets:
   - Lists *
   - Tables *
  
-* _indicates still under development._
+(*) _indicates still under development._
 
 It can easily integrate with off the shelf CSS packages like Bootstrap 
 and Foundation.
