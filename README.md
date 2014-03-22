@@ -13,7 +13,7 @@ Widgets:
   - Text Fields
   - Textareas 
   - Checkboxes
-  - Radio buttons *
+  - Radio buttons
   - Select lists *
   - Forms *
   - Autocompletion *
@@ -123,26 +123,34 @@ Tango.Checkbox('enableCheats', {
 
 ## Radio Buttons
 
-Tango.RadioButtons
+Tango.RadioGroup
 
 ### Usage Example
 ```js
 
 var model = new Backbone.Model({
   favoriteColor: "blue",
+  labelLocation: "left",      // where the label appears, defaults to 'right'.
   colorOptions: [
-      ['red', 'Red'],
+      ['red', 'Red'],         // 'red' is button value, 'Red' is label text.
       ['blue', 'Blue'],
       ['orange', 'Orange']
   ]
 });
 
-var fav = Tango.RadioButtons('favoriteColor', {
+var favColor = Tango.RadioGroup('favoriteColor', {
   label: "Choose your favorite",
   options: "colorOptions"
 }, model);
 
-fav.value(); // => blue
+favColor.value(); // => blue
+
+favColor.button('red').value(); // false
+favColor.button('blue').value(); // true
+
+favColor.value('red');
+favColor.button(0).checked(); // true. note the access by index.
+
 
 ```
 
@@ -382,9 +390,10 @@ fruitSelector.disable()
 
 // Widget config items
 var config = {
-  label: "Foo",
+  parent:  '#content'   // The selector of the widget's ancestor. Defaults to 'body'.
+  label: 'Foo',         // Desired label text.
 
-  validate: {
+  validate: {           // Validator configuration.
     required: true
 
     number: {
@@ -400,7 +409,7 @@ var config = {
       errorMessage: "Must be a cat or a hat."
     },
 
-    matches: {
+    matches: {              // Useful for passwords and email confirmation.
       target: 'password',
       errorMessage: "Confirmation must match password."
     },
@@ -408,14 +417,17 @@ var config = {
     awesome: true
   },
 
-  enabledFn: function(model) {
+  // Only enable the widget if the callback returns true
+  enabledFn: function(model) {        
       return !!model.title
   },
 
+  // The widget will be visible only if the callback returns true.
   visibleFn: function(model) {
       return model.showDescription
   },
 
+  // The widget will be read-only if the callback returns true.
   readOnlyFn: function(model) {
       return model.allowEdit
   },
@@ -430,7 +442,7 @@ _Why Backbone?_
 It's well designed and has a clean api. There's no need to re-invent
 the wheel.
 
-_Why not just use Backbone Views?_
+  _Why not just use Backbone Views?_
 
 Templating is a useful waty to bind data to the DOM in some use cases. However,
 in other apps that have a heavy use of forms or involve lots of interactivity,

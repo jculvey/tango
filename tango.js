@@ -1,18 +1,3 @@
-//define('myModule', 
-    //['backbone', 'underscore', 'jquery'], 
-
-    //function ( Backbone, _, $, exports  ) {
-
-        //var Tango = {
-            //doStuff:function(){
-                //console.log('Yay! Stuff');
-            //}
-        //}
-
-        //return Tango;
-    //}
-//);
-
 (function(root) {
 
   var Tango = {};
@@ -36,6 +21,11 @@
 
     checkboxContainerClass: "checkbox",
     checkboxClass: "",
+
+    radioOptionContainerClass: "radio",
+    radioOptionClass: "",
+
+    radioGroupClass: "tango-radio-group",
 
     // Status classes
     warningClass: "has-warning",
@@ -72,40 +62,24 @@
     initialize: function(dataBind, config, model) {
       this._dataBind = dataBind;
       this._config = (config || {});
-
-      var el = $('[data-bind=' + dataBind + ']');
-      if (el.length == []) {
-        throw new Error("Couldn't find an input with the data-bind: " + dataBind);
-      }
-      else {
-        this.el = el;
-      }
-
+      // TODO: handle null model
       this.model = model;
 
-      //if (!model) {
-        //throw new Error("Can't initialize widget from empty model.");
-      //}
-      //else {
-        //this.model = model;
-      //}
-
-      // Set the initial value
-      var initialValue = this.el.val();
-      if(model.has(dataBind)){
-        initialValue = model.get(dataBind);
-        this.el.val(initialValue);
+      var parent = $(config.parentSelector);
+      if (parent.length !== 0) {
+        this._parent = parent;
       }
       else {
-        model.set(dataBind, initialValue);
+        this._parent = $('body');
       }
-      this.lastValue = initialValue;
+
+      // Create the element
+      this._createElement();
+
+      this._setInitialValue();
 
       // Set the identifier for later use
-      var id = this.el.attr('id');
-      if (!id) {
-        this.el.attr('id', _.uniqueId('tango-'));
-      }
+      this.el.attr('id') || this.el.attr('id', _.uniqueId('tango-'));
 
       // Create container
       this._createContainer();
@@ -124,31 +98,45 @@
       // Handle model changes to just this attribute
       var event = 'change:' + this._dataBind;
       model.on(event, function() {
-        this.el.val(this.model.get(this._dataBind));
-        this._validate();
+        this._modelChangeHandler();
       }, this);
 
       // Wire widget to model 
       var self = this;
       this.el.on('change', function(e){
-        var val = $(this).val();
-        self.value($(this).val());
+        self._elementChangeHandler(this, self);
       });
 
       // Handle visible and enabled for initial state
-      modelChangeHandler.call(this, this._config.enableFn, this.enable, this.disable);
-      modelChangeHandler.call(this, this._config.visibleFn, this.show, this.hide);
+      toggleIf.call(this, this._config.enableFn, this.enable, this.disable);
+      toggleIf.call(this, this._config.visibleFn, this.show, this.hide);
 
       // Handle global model change
       model.on("change", function() {
-        modelChangeHandler.call(this, config.enableFn, this.enable, this.disable);
-        modelChangeHandler.call(this, config.visibleFn, this.show, this.hide);
+        toggleIf.call(this, config.enableFn, this.enable, this.disable);
+        toggleIf.call(this, config.visibleFn, this.show, this.hide);
       }, this);
 
     },
 
     addValidator: function(fn) {
       _validateFunctions.push(fn);
+    },
+
+    _applyStyling: function() {
+      var cssClass = this._config.cssClass || this._defaultCssClass;
+      this.el.addClass(cssClass);
+    },
+
+    _createElement: function() {
+      var el = $('[data-bind=' + this._dataBind + ']');
+      if (el.length == 0) {
+        var msg = "Couldn't find an input with the data-bind: " + this._dataBind;
+        throw new Error(msg);
+      }
+      else {
+        this.el = el;
+      }
     },
 
     _createLabel: function() {
@@ -171,9 +159,26 @@
       this.containerEl =  containerEl;
     },
 
-    _applyStyling: function() {
-      var cssClass = this._config.cssClass || this._defaultCssClass;
-      this.el.addClass(cssClass);
+    _elementChangeHandler: function(selector, widget) {
+      var val = $(selector).val();
+      this.value(val);
+    },
+
+    _modelChangeHandler: function(e) {
+      this.el.val(this.model.get(this._dataBind));
+      this._validate();
+    },
+
+    _setInitialValue: function() {
+      var initialValue = this.el.val();
+      if(this.model.has(this._dataBind)){
+        initialValue = this.model.get(this._dataBind);
+        this.el.val(initialValue);
+      }
+      else {
+        this.model.set(this._dataBind, initialValue);
+      }
+      this.lastValue = initialValue;
     },
 
     // To be overridden by subclass if they have any validators
@@ -225,7 +230,6 @@
 
     value: function(newValue){
       if ( newValue !== undefined ) {
-        debugger;
         this.lastValue = this.model.get(this._dataBind) || "";
         this.model.set(this._dataBind, newValue);
       }
@@ -236,7 +240,7 @@
 
   };
 
-  function modelChangeHandler(fn, trueCb, falseCb) {
+  function toggleIf(fn, trueCb, falseCb) {
     if (fn) {
       var cond = fn(this.model);
       if (cond) {
@@ -464,8 +468,11 @@
     superclass: WidgetBase,
 
     initialize: function(dataBind, config, model) {
-      this.superclass.initialize.apply(this, arguments);
       config = (config || {});
+      config.containerClass = config.containerClass ||
+                              Tango.styleConfig.checkboxContainerClass;
+
+      this.superclass.initialize.apply(this, arguments);
 
       // Set the initial value
       var initialValue = this.el.prop('checked');
@@ -488,14 +495,13 @@
 
     _defaultCssClass: Tango.styleConfig.checkboxClass,
 
-    _createContainer: function() {
-      var cssClass = this._config.containerClass ||
-                     Tango.styleConfig.checkboxContainerClass;
-      var id = _.uniqueId('tango-');
-      var container = '<div class="' + cssClass + '" id="' + id + '">';
-      var containerEl = $(container).insertBefore(this.el);
-      containerEl.append(this.el);
-      this.containerEl =  containerEl;
+    _elementChangeHandler: function(selector, widget) {
+      var val = $(selector).prop('checked');
+      this.value(val);
+    },
+
+    _modelChangeHandler: function(e) {
+      this.el.prop('checked', this.model.get(this._dataBind));
     },
 
     value: function(newValue){
@@ -510,9 +516,166 @@
 
   });
 
+  var RadioButton = Tango.RadioButton = function(dataBind, config, model) {
+    this.initialize.apply(this, arguments);
+  };
+
+  _.extend(RadioButton.prototype, WidgetBase, {
+    superclass: WidgetBase,
+
+    initialize: function(dataBind, config, model) {
+      this._radioValue = config.radioValue;
+      config.containerClass = config.containerClass || 
+                              Tango.styleConfig.radioOptionContainerClass;
+      this.superclass.initialize.apply(this, [dataBind, config, model]);
+    },
+
+    _defaultCssClass: Tango.styleConfig.radioGroupClass,
+
+    _createElement: function() {
+      var selector = '[data-bind=' + this._dataBind + ']' +
+                     '[value=' + this._radioValue + ']';
+
+      var el = $(selector);
+      if (el.length == 0) {
+        debugger;
+        var html = '<input type="radio" data-bind="'+ this._dataBind + 
+                    '" value="'+ this._radioValue +'" />'
+        this.el = $(html).appendTo(this._parent);
+      }
+      else {
+        this.el = el;
+      }
+
+      // make sure the name is set properly
+      this.el.prop('name', this._dataBind);
+    },
+
+    _elementChangeHandler: function(selector, widget) {
+      var val = $(selector).prop('checked');
+      this.value(val);
+    },
+
+    _modelChangeHandler: function(e) {
+      var sameAsModel = (this.model.get(this._dataBind) === this._radioValue);
+      if (!this.el.prop('checked') && sameAsModel) {
+        this.el.prop('checked', true);
+      }
+    },
+
+    _setInitialValue: function() {
+      var initialValue = this.el.prop('checked');
+
+      if(this.model.has(this._dataBind)){
+        var modelVal = this.model.get(this._dataBind);
+        initialValue = modelVal === this._radioValue;
+        this.el.prop('checked', !!initialValue);
+      }
+      else {
+        if (!!initialValue) {
+          this.model.set(this._dataBind, this._radioValue);
+        }
+      }
+
+      this.lastValue = initialValue;
+    },
+
+    value: function(newValue){
+      if ( newValue !== undefined ) {
+        this.lastValue = this.model.get(this._dataBind) || false;
+        if (!!newValue) {
+          this.model.set(this._dataBind, this._radioValue);
+        }
+      }
+      else {
+        return this.model.get(this._dataBind) === this._radioValue;
+      }
+    }
+
+  });
+
+  var RadioGroup = Tango.RadioGroup = function(dataBind, config, model) {
+    this.initialize.apply(this, arguments);
+  };
+
+  _.extend(RadioGroup.prototype, WidgetBase, {
+    superclass: WidgetBase,
+
+    initialize: function(dataBind, config, model) {
+      this.buttons = [];
+      this._options = config.options;
+      if (!this._options) { 
+        throw new Error("Can't init RadioGroup without 'options'");
+      }
+      this.superclass.initialize.apply(this, arguments);
+    },
+
+    _createContainer: noop,
+
+    _createElement: function() {
+
+      var cssClass = this._config.containerClass 
+                     || Tango.styleConfig.radioGroupClass;
+      var id = _.uniqueId('tango-');
+      var containerHtml = '<div class="' + cssClass + '" id="' + id + '">';
+
+      // If there are the same number of options as elements
+      var inputs = $('[data-bind=' + this._dataBind + ']');
+      if (inputs.length == this._options.length) {
+        // First, create radio group element
+        this.el = this.containerEl = $(containerHtml).insertBefore(inputs[0]);
+        this.el.append(inputs);
+      }
+      else if (inputs.length === 1) {
+        // Consider it a single input "prototype"
+        var input = inputs[0];
+        this.el = this.containerEl = $(containerHtml).insertBefore(input);
+        input.remove();
+      }
+      else if (inputs.length && (inputs.length !== this._options.length)) {
+        var msg = "Bad config for RadioGroup. Number of elements " +
+                  "with data-bind value must match the number of config.options";
+        throw new Error(msg);
+      }
+      else {
+        // Consider it a parent parent
+        this.containerEl = $(containerHtml).appendTo(this._parent);
+      }
+
+      _.each(this._options, function(option) {
+        var button =  new RadioButton(this._dataBind, {
+          label: option[1],
+          radioValue: option[0],
+          parentSelector: '#' + id
+        }, model);
+
+        this.buttons.push(button);
+      }, this);
+
+    },
+
+    _defaultCssClass: Tango.styleConfig.radioGroupClass,
+
+    button: function(index) {
+      if (_.isNumber(index)) {
+        return this.buttons[index];
+      }
+      if (_.isString(index)) {
+        var button = _.filter(colors.buttons, function(b){
+          return b._radioValue === index;
+        });
+
+        if (button.length) {
+          return button[0];
+        }
+      }
+
+      return undefined;
+    }
+
+  });
+
   root.Tango = Tango;
 
 })(this)
-
-
 

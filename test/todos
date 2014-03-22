@@ -1,0 +1,3 @@
+- Allow the creation of RadioGroup without config.options.
+- Allow null model arguments.
+  - most minimal use case of no data-bind elements and no model should work.

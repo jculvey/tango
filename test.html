@@ -44,13 +44,9 @@
     <div class="container">
 
       <div class="starter-template">
-        <div class="row">
-          <h1>Examples</h1>
-          <p>An example form that uses Tango widgets</p>
-        </div>
 
         <div class="row">
-          <h1>Textfield test</h1>
+          <h3>Textfield test</h3>
           <div class="col-md-6">
             <form action="foo" class="form-horizontal" role="form">
               <input type="text" data-bind="firstName"/>
@@ -65,12 +61,28 @@
         </div>
 
         <div class="row">
-          <h1>Textfield test</h1>
+          <h3>Checkbox test</h3>
           <div class="col-md-6">
             <form action="foo" class="form-horizontal" role="form">
               <input type="checkbox" data-bind="cheats"/>
               <input id="foo" type="checkbox" value="foo"/>
             </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <h3>Radio test</h3>
+          <div class="col-md-6">
+
+            <form action="foo" class="form-horizontal" role="form">
+              <input type="radio" data-bind="fruits" value="apple"/>
+              <input type="radio" data-bind="fruits" value="banana"/>
+            </form>
+
+            <form action="foo" class="form-horizontal" role="form">
+              <div data-bind="colors"></div>
+            </form>
+
           </div>
         </div>
 

@@ -4,7 +4,13 @@ var model = new Backbone.Model({
   lastName: "Washington",
   age: 20,
   weight: 480,
-  headcover: 'cap'
+  headcover: 'cap',
+  colors: 'red',
+  fruits: 'apple'
+});
+
+model.on('change', function(model) {
+  console.log('changed: ' + JSON.stringify(model.changed));
 });
 
 var fname = new Tango.TextInput('firstName', {
@@ -67,19 +73,6 @@ var party = new Tango.TextInput('party', {
   placeholder: "Ex. Libertarian"
 }, model);
 
-// More complicated view models
-var ViewModel = Backbone.Model.extend({
-  fullName: function() {
-      return this.get('firstName') + ' ' + this.get('lastName');
-  }
-});
-
-var viewModel = new ViewModel({
-  firstName: 'George',
-  lastName: 'Washington',
-  dob: '2/22/1732'
-});
-
 var blurb = new Tango.TextArea('blurb', {
   label: "Blurb:",
   placeholder: "Enlightening Information"
@@ -89,13 +82,50 @@ var enableCheats = new Tango.Checkbox('cheats', {
   label: "Enable Cheats"
 }, model);
 
+// Radio buttons
+
+//var blue = new Tango.RadioButton('colors', {
+  //label: "Blue",
+  //parentSelector: '#colors',
+  //radioValue: "blue"
+//}, model);
+
+//var red = new Tango.RadioButton('colors', {
+  //label: "Red",
+  //parentSelector: '#colors',
+  //radioValue: "red"
+//}, model);
+
+//var apple = new Tango.RadioButton('fruits', {
+  //label: "Apple",
+  //parentSelector: '#colors',
+  //radioValue: "apple"
+//}, model);
+
+//var banana = new Tango.RadioButton('fruits', {
+  //label: "Banana",
+  //parentSelector: '#colors',
+  //radioValue: "banana"
+//}, model);
 
 
+// <input type="radio" data-bind="fruits" value="apple"/>
+var fruits = new Tango.RadioGroup('fruits', {
+  label: "Choose your favorite",
+  options: [
+    ['apple', 'Apple'],
+    ['banana', 'Banana']
+  ]
+}, model);
 
-
-
-
-
+// <div id="colors">
+var colors = new Tango.RadioGroup('colors', {
+  label: "Choose your favorite",
+  options: [
+    ['red', 'Red'],
+    ['blue', 'Blue'],
+  ]
+}, model);
 
 
 
