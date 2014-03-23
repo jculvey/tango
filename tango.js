@@ -538,7 +538,6 @@
 
       var el = $(selector);
       if (el.length == 0) {
-        debugger;
         var html = '<input type="radio" data-bind="'+ this._dataBind + 
                     '" value="'+ this._radioValue +'" />'
         this.el = $(html).appendTo(this._parent);
@@ -613,7 +612,6 @@
     _createContainer: noop,
 
     _createElement: function() {
-
       var cssClass = this._config.containerClass 
                      || Tango.styleConfig.radioGroupClass;
       var id = _.uniqueId('tango-');
@@ -639,7 +637,7 @@
       }
       else {
         // Consider it a parent parent
-        this.containerEl = $(containerHtml).appendTo(this._parent);
+        this.el = this.containerEl = $(containerHtml).appendTo(this._parent);
       }
 
       _.each(this._options, function(option) {
@@ -654,6 +652,22 @@
 
     },
 
+    _setInitialValue: function() {
+      var initialValue = this.checkedOption()._radioValue;
+
+      if(this.model.has(this._dataBind)){
+        var modelVal = this.model.get(this._dataBind);
+        initialValue = modelVal;
+        this.button(modelVal).el.prop('checked', true);
+      }
+      else {
+        this.model.set(this._dataBind, initialValue);
+      }
+
+      this.lastValue = initialValue;
+    },
+
+
     _defaultCssClass: Tango.styleConfig.radioGroupClass,
 
     button: function(index) {
@@ -661,7 +675,7 @@
         return this.buttons[index];
       }
       if (_.isString(index)) {
-        var button = _.filter(colors.buttons, function(b){
+        var button = _.filter(this.buttons, function(b){
           return b._radioValue === index;
         });
 
@@ -671,7 +685,16 @@
       }
 
       return undefined;
+    },
+
+    checkedOption: function() {
+      var button = _.filter(this.buttons, function(b){
+        return b.el.prop('checked');
+      });
+
+      return button;
     }
+
 
   });
 

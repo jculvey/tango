@@ -9,6 +9,7 @@
     <!-- Bootstrap -->
     <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="vendor/chosen.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -86,6 +87,21 @@
           </div>
         </div>
 
+        <div class="row">
+          <h3>Select test</h3>
+          <div class="col-md-6">
+
+            <form action="foo" class="form-horizontal" role="form">
+              <select class="select">
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+                <option value="3">Option 3</option>
+              </select>
+            </form>
+
+          </div>
+        </div>
+
         <br/>
         <br/>
         <br/>
@@ -102,6 +118,10 @@
 
     <script src="bower_components/underscore/underscore.js"></script>
     <script src="bower_components/backbone/backbone.js"></script>
+
+    <script src="vendor/chosen.jquery.js"></script>
+    <script src="vendor/chosen.proto.js"></script>
+
     <script src="tango.js"></script>
     <script src="test.js"></script>
 

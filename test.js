@@ -128,7 +128,7 @@ var colors = new Tango.RadioGroup('colors', {
 }, model);
 
 
-
+$('.select').chosen();
 
 
 
