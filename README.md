@@ -9,12 +9,6 @@ Still a work in progress.
 Tango is a javascript widget library that provides automatic two way binding
 and easy input validation.
 
-Widgets:
-  - Text Fields
-  - Textareas 
-  - Checkboxes
-  - Radio buttons
-
 It can easily integrate with off the shelf CSS packages like Bootstrap 
 and Foundation.
 
