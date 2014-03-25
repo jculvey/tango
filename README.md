@@ -14,19 +14,6 @@ Widgets:
   - Textareas 
   - Checkboxes
   - Radio buttons
-  - Select lists *
-  - Forms *
-  - Autocompletion *
-  - Datepicker *
-  - Colorpicker *
-  - Password *
-  - Email *
-  - Hidden input *
-  - Links *
-  - Lists *
-  - Tables *
- 
-Asterix denotes that this is still under development.
 
 It can easily integrate with off the shelf CSS packages like Bootstrap 
 and Foundation.
